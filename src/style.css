@@ -1,0 +1,48 @@
+body {
+  height: 100dvh;
+  width: 100dvw;
+  background-color: #141414;
+  color: #eeeeee;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 1.4rem;
+  line-height: 2.4rem;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  top: 0;
+  overflow-x: hidden;
+}
+
+h1 {
+  font-size: 3rem;
+  line-height: 4rem;
+}
+
+h2 {
+  font-size: 2rem;
+  line-height: 3rem;
+}
+
+ul li {
+  padding: auto;
+  margin: auto;
+}
+
+a {
+  color: #cccccc;
+}
+
+.backButton {
+  position: absolute;
+  top: 5rem;
+  left: 5rem;
+}
+
+canvas {
+  aspect-ratio: 16/9;
+  width: min(90dvw, 90dvh);
+  border: 1px solid white;
+}
