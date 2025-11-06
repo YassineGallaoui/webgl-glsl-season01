@@ -1,33 +1,66 @@
+import { readdirSync, statSync } from 'fs';
+import { join, resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = resolve(__filename, '..');
+
+// Function to recursively find all HTML files
+const findHtmlFiles = (dir, baseDir = __dirname) => {
+    const files = {};
+
+    try {
+        const items = readdirSync(dir);
+
+        for (const item of items) {
+            const fullPath = join(dir, item);
+            const stat = statSync(fullPath);
+
+            if (stat.isDirectory() && !item.startsWith('.') && item !== 'node_modules' && item !== 'dist') {
+                // Recursively search subdirectories
+                Object.assign(files, findHtmlFiles(fullPath, baseDir));
+            } else if (stat.isFile() && item.endsWith('.html')) {
+                // Generate a key name from the file path
+                const relativePath = fullPath.replace(baseDir + '/', '');
+                const keyName = relativePath.replace(/[/\\]/g, '-').replace('.html', '');
+                files[keyName] = fullPath;
+            }
+        }
+    } catch (error) {
+        // Silently ignore directory read errors
+    }
+
+    return files;
+};
 
 export default defineConfig({
-    root: '',
+    root: '.',
+    base: '/',
     build: {
-        outDir: './dist',
+        outDir: 'dist',
         emptyOutDir: true,
         rollupOptions: {
             input: {
+                // Main index.html file
                 main: resolve(__dirname, 'index.html'),
-                frag1: resolve(__dirname, 'src/fragmentDistortion/ex1/index.html'),
-                frag2: resolve(__dirname, 'src/fragmentDistortion/ex2/index.html'),
-                frag3: resolve(__dirname, 'src/fragmentDistortion/ex3/index.html'),
-                frag4: resolve(__dirname, 'src/fragmentDistortion/ex4/index.html'),
-                frag5v1: resolve(__dirname, 'src/fragmentDistortion/ex5v1/index.html'),
-                frag5v2: resolve(__dirname, 'src/fragmentDistortion/ex5v2/index.html'),
-                frag6: resolve(__dirname, 'src/fragmentDistortion/ex6/index.html'),
-                vertex1: resolve(__dirname, 'src/vertexDistortion/ex1/index.html'),
-                vertex2: resolve(__dirname, 'src/vertexDistortion/ex2/index.html'),
-                vertex3: resolve(__dirname, 'src/vertexDistortion/ex3/index.html'),
-                vertex4: resolve(__dirname, 'src/vertexDistortion/ex4/index.html'),
+                // Dynamically find all HTML files in src directory
+                ...findHtmlFiles(resolve(__dirname, 'src'))
             },
-        },
+            output: {
+                entryFileNames: 'assets/[name]-[hash].js',
+                chunkFileNames: 'assets/[name]-[hash].js',
+                assetFileNames: 'assets/[name]-[hash].[ext]'
+            }
+        }
     },
-    css: {
-        preprocessorOptions: {
-            scss: {
-                api: 'modern-compiler',
-            },
-        },
+    resolve: {
+        alias: {
+            '@': resolve(__dirname, 'src')
+        }
+    },
+    server: {
+        open: true,
+        host: true
     }
 });
